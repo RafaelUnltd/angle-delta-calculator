@@ -1,0 +1,14 @@
+{
+  "name": "angle_variation_calculator",
+  "version": "1.0.0",
+  "description": "A simple application to calculate the total angle variation of a set of data",
+  "main": "main.js",
+  "scripts": {
+    "calculate": "node main.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "csv": "^6.2.12"
+  }
+}

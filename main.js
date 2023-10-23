@@ -4,11 +4,16 @@ const { parse } = require('csv-parse')
 const edges = [-180, 180]
 
 function distanceBetweenAngles (previous, next) {
-    if (previous > 0 && next < 0 && next < -90) {
-        return (edges[1] - previous) - (edges[0] - next)
-    } else if (previous < 0 && next > 0 && next > 90) {
-        return (edges[0] - previous) - (edges[1] - next)
+    if ((previous < 0 && next > 0) || (previous > 0 && next < 0)) {
+        if (previous < -90 && next > 90) {
+            return (edges[1] - previous) - (edges[0] + next)
+        } else if (previous > 90 && next < -90) {
+            return (edges[1] - next) - (edges[0] + previous)
+        } else {
+            Math.abs(previous) + Math.abs(next)
+        }
     }
+
     return next - previous
 }
 
@@ -18,7 +23,7 @@ function calculateDeltaBySample (sample) {
     for (let i = 0; i < sample.length - 1; i++) {
         let previous = sample[i]
         let next = sample[i + 1]
-        let delta = distanceBetweenAngles(previous, next)
+        let delta = Math.abs(distanceBetweenAngles(previous, next))
         totalDelta += delta
     }
 
@@ -30,7 +35,7 @@ function readAndProccessSample (fileName, resolve) {
     let currentMass = null
 
     fs.createReadStream(`./samples/${fileName}`)
-        .pipe(parse({ delimiter: ',', from_line: 2 }))
+        .pipe(parse({ delimiter: ',', from_line: 1 }))
         .on('data', function (row) {
             if (row[1] !== '') {
                 massMap[row[1]] = []
@@ -41,7 +46,7 @@ function readAndProccessSample (fileName, resolve) {
             const results = {}
     
             Object.keys(massMap).forEach((label) => {
-                results[label] = Math.abs(calculateDeltaBySample(massMap[label]))
+                results[label] = (Math.abs(calculateDeltaBySample(massMap[label])).toFixed(2) / massMap[label].length).toFixed(2)
             })
 
             resolve(results)
